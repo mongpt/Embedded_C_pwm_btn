@@ -24,6 +24,7 @@ int main() {
 
     // Initialize variables for PWM control
     bool btn_held = false;
+    bool btn_en = false;
     uint16_t wrap = 999;
     uint duty = 0;
     uint pre_duty = 0;
@@ -72,6 +73,7 @@ int main() {
                 if (duty) {
                     pre_duty = duty;
                     duty = 0;
+                    btn_en = false;
                 } else {
                     if (pre_duty) {
                         duty = pre_duty;
@@ -79,6 +81,7 @@ int main() {
                         duty = 50;
                         pre_duty = duty;
                     }
+                    btn_en = true;
                 }
                 // Update LED brightness
                 pwm_set_chan_level(slice_num1, chan1, (wrap + 1) * duty / 100);
@@ -89,32 +92,33 @@ int main() {
         } else if (gpio_get(sw1)) {
             btn_held = false;
         }
-
-        // Check sw0 for increasing brightness
-        if (!gpio_get(sw0)) {
-            while (isPressed(sw0)) {
-                if (duty < 100) {
-                    duty += 1;
-                    pre_duty = duty;
-                    // Update LED brightness
-                    pwm_set_chan_level(slice_num1, chan1, (wrap + 1) * duty / 100);
-                    pwm_set_chan_level(slice_num2, chan2, (wrap + 1) * duty / 100);
-                    pwm_set_chan_level(slice_num3, chan3, (wrap + 1) * duty / 100);
-                    sleep_ms(100);
+        if (btn_en) {
+            // Check sw0 for increasing brightness
+            if (!gpio_get(sw0)) {
+                while (isPressed(sw0)) {
+                    if (duty < 100) {
+                        duty += 5;
+                        pre_duty = duty;
+                        // Update LED brightness
+                        pwm_set_chan_level(slice_num1, chan1, (wrap + 1) * duty / 100);
+                        pwm_set_chan_level(slice_num2, chan2, (wrap + 1) * duty / 100);
+                        pwm_set_chan_level(slice_num3, chan3, (wrap + 1) * duty / 100);
+                        sleep_ms(100);
+                    }
                 }
             }
-        }
-        // Check sw2 for decreasing brightness
-        if (!gpio_get(sw2)) {
-            while (isPressed(sw2)) {
-                if (duty > 0) {
-                    duty -= 1;
-                    pre_duty = duty;
-                    // Update LED brightness
-                    pwm_set_chan_level(slice_num1, chan1, (wrap + 1) * duty / 100);
-                    pwm_set_chan_level(slice_num2, chan2, (wrap + 1) * duty / 100);
-                    pwm_set_chan_level(slice_num3, chan3, (wrap + 1) * duty / 100);
-                    sleep_ms(100);
+            // Check sw2 for decreasing brightness
+            if (!gpio_get(sw2)) {
+                while (isPressed(sw2)) {
+                    if (duty > 0) {
+                        duty -= 5;
+                        pre_duty = duty;
+                        // Update LED brightness
+                        pwm_set_chan_level(slice_num1, chan1, (wrap + 1) * duty / 100);
+                        pwm_set_chan_level(slice_num2, chan2, (wrap + 1) * duty / 100);
+                        pwm_set_chan_level(slice_num3, chan3, (wrap + 1) * duty / 100);
+                        sleep_ms(100);
+                    }
                 }
             }
         }
